@@ -1,0 +1,21 @@
+{
+  "name": "cpr-script",
+  "version": "1.0.0",
+  "description": "This script analyses the stocks in top 500 nifty stocks whose current market price is trading above camarilla H4 or below camarilla L4 ",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Abhik Mehta",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "csv-parse": "^4.16.0",
+    "csv-writer": "^1.6.0",
+    "getmac": "^5.17.0",
+    "google": "^2.1.0",
+    "path": "^0.12.7",
+    "public-ip": "^4.0.4"
+  }
+}
