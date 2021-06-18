@@ -8,7 +8,10 @@ const csvWriter = createCsvWriter({
   header: [
     {id: 'range', title: 'Range'},
     {id: 'h4', title: 'Camarilla H4'},
-    {id: 'l4', title: 'Camarilla L4'}
+    {id: 'l4', title: 'Camarilla L4'},
+    {id: 'high', title: 'Day High'},
+    {id: 'low', title: 'Day Low'},
+    {id: 'close', title: 'Day Close'}
   ]
 });
 
@@ -39,7 +42,12 @@ async function rangeCalculator() {
         try {
             const ohlcData = await fetchStockData(tickerData[i]);
             const datasetSize = ohlcData.close.length;
-            const closePrice = ohlcData.close[datasetSize - 1];
+            let closePrice = ohlcData.close[datasetSize - 1];
+            let jj = datasetSize - 1;
+            while(closePrice === null && jj>=0) {
+                closePrice = ohlcData.close[jj-1];
+                jj--;
+            }
             let minPrice = 1000000, maxPrice = 0;
             for(let j = 0; j < datasetSize; j++) {
                 if(ohlcData.low[j] !== null && ohlcData.low[j] < minPrice) {
@@ -54,10 +62,21 @@ async function rangeCalculator() {
             rangeL4H4Array.push({
                 range: range,
                 l4: l4,
-                h4: h4
+                h4: h4,
+                high: maxPrice,
+                low: minPrice,
+                close: closePrice
             });
             console.log(`fetched ${i+1} records. Close the CSV file, if Open!!`);
         } catch(err) {
+            rangeL4H4Array.push({
+                range: 'error',
+                l4: 'error',
+                h4: 'error',
+                high: 'error',
+                low: 'error',
+                close: 'error'
+            });
             console.log(`error encountered in ${i+1}th record`)
         }
     }
