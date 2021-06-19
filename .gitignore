@@ -2,4 +2,8 @@ node_modules
 package-lock.json
 h4-breaks.csv
 l4-breaks.csv
-prev-day-range.csv
+prev-day-data.csv
+cpr-bc.csv
+cpr-p.csv
+cpr-tc.csv
+narrow-cpr.csv
