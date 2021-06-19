@@ -1,7 +1,7 @@
 const fs = require('fs');
 const parse = require('csv-parse');
 const path = require('path');
-const fetchStockData = require('./fetch-data');
+const fetchStockData = require('./fetch-price-data');
 const tempArrayTicker = [], tempArrayTickerRange = [];
 const tempArrayTickerL4 = [], tempArrayTickerH4 = [];
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -10,12 +10,12 @@ const csvWriter1 = createCsvWriter({
     header: [
       {id: 'h4', title: 'Camarilla H4 Breakout'},
     ]
-  });
+});
 const csvWriter2 = createCsvWriter({
-path: '../l4-breaks.csv',
-header: [
-    {id: 'l4', title: 'Camarilla H4 Breakout'},
-]
+    path: '../l4-breaks.csv',
+    header: [
+        {id: 'l4', title: 'Camarilla H4 Breakout'},
+    ]
 });
 let counter = 0, tickerData;
 

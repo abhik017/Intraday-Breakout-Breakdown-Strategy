@@ -1,17 +1,21 @@
 const path = require('path');
 const fs = require('fs');
 const parse = require('csv-parse');
-const fetchStockData = require('./fetch-data');
+const fetchStockData = require('./fetch-price-data');
+const calcCpr = require('./calculate-cpr');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const csvWriter = createCsvWriter({
-  path: '../prev-day-range.csv',
+  path: '../prev-day-data.csv',
   header: [
     {id: 'range', title: 'Range'},
     {id: 'h4', title: 'Camarilla H4'},
     {id: 'l4', title: 'Camarilla L4'},
     {id: 'high', title: 'Day High'},
     {id: 'low', title: 'Day Low'},
-    {id: 'close', title: 'Day Close'}
+    {id: 'close', title: 'Day Close'},
+    {id: 'pivot', title: 'Central Pivot'},
+    {id: 'bc', title: 'BC'},
+    {id: 'tc', title: 'TC'}
   ]
 });
 
@@ -48,6 +52,9 @@ async function rangeCalculator() {
                 closePrice = ohlcData.close[jj-1];
                 jj--;
             }
+            if(closePrice === null) {
+                throw "Error";
+            }
             let minPrice = 1000000, maxPrice = 0;
             for(let j = 0; j < datasetSize; j++) {
                 if(ohlcData.low[j] !== null && ohlcData.low[j] < minPrice) {
@@ -59,13 +66,17 @@ async function rangeCalculator() {
             }
             const range = Math.abs(maxPrice - minPrice);
             const l4 = closePrice - (range * (1.1/2)), h4 = closePrice + (range * (1.1/2));
+            const cpr = calcCpr(maxPrice, minPrice, closePrice);
             rangeL4H4Array.push({
-                range: range,
-                l4: l4,
-                h4: h4,
-                high: maxPrice,
-                low: minPrice,
-                close: closePrice
+                range: parseFloat(range),
+                l4: parseFloat(l4),
+                h4: parseFloat(h4),
+                high: parseFloat(maxPrice),
+                low: parseFloat(minPrice),
+                close: parseFloat(closePrice),
+                pivot: parseFloat(cpr.pivot),
+                tc: parseFloat(cpr.tc),
+                bc: parseFloat(cpr.bc)
             });
             console.log(`fetched ${i+1} records. Close the CSV file, if Open!!`);
         } catch(err) {
@@ -75,7 +86,10 @@ async function rangeCalculator() {
                 h4: 'error',
                 high: 'error',
                 low: 'error',
-                close: 'error'
+                close: 'error',
+                tc: 'error',
+                bc: 'error',
+                pivot: 'error'
             });
             console.log(`error encountered in ${i+1}th record`)
         }
