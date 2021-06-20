@@ -11,9 +11,10 @@ const csvWriter1 = createCsvWriter({
     ]
 });
 const csvWriter2 = createCsvWriter({
-    path: '../narrow-cpr.csv',
+    path: '../moderately-narrow-cpr.csv',
     header: [
-      {id: 'stock', title: 'Name'}
+        {id: 'stock', title: 'Name'},
+        {id: 'width', title: 'Priority'}
     ]
 });
 let counter = 0;
@@ -44,8 +45,9 @@ let tickerData = new Promise((resolve) => {
 async function getCprWidth(high, low, close) {
     const {pivot, bc, tc} = calcCpr(high, low, close);
     const delta = Math.abs(bc - tc);
-    if(delta === 0) return 1000000;
-    return close/delta;
+    // if(delta === 0) return 1000000;
+    // return close/delta; -> This method is being used on chartink screeners!
+    return (delta/pivot) * 100; // -> this method is used in cpr width indicator in tradingview
 }
 
 async function getNarrowCprList() {
@@ -56,10 +58,15 @@ async function getNarrowCprList() {
             try {
                 const element = tickerData1[index];
                 const width = await getCprWidth(parseFloat(element.high), parseFloat(element.low), parseFloat(element.close));
-                if(width >= 1000) {
+                if(width <= 0.25) {
                     extremelyNarrow.push({
                         stock: element.stock,
                         width: width
+                    });
+                } else if(width <= 0.5) {
+                    narrow.push({
+                        stock: element.stock,
+                        width: width,
                     });
                 }
                 if(!(index % 10)) {
@@ -75,6 +82,7 @@ async function getNarrowCprList() {
     }
     return {
         extremelyNarrow: extremelyNarrow,
+        narrow: narrow,
     };
 }
 
@@ -86,6 +94,11 @@ async function generateCsv() {
             .then(() => {
                 console.log('CSV 1 generated!')
             });
+        csvWriter2
+            .writeRecords(narrow)
+            .then(() => {
+                console.log('CSV 2 generated!');
+            });
     } catch(err) {
         console.log(err);
     }
@@ -93,4 +106,4 @@ async function generateCsv() {
 
 generateCsv();
 
-module.exports = getCpr;
+// module.exports = getCpr;
