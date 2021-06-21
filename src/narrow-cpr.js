@@ -7,14 +7,14 @@ const csvWriter1 = createCsvWriter({
     path: '../extemely-narrow-cpr.csv',
     header: [
       {id: 'stock', title: 'Name'},
-      {id: 'width', title: 'Priority'}
+    //   {id: 'width', title: 'Priority'}
     ]
 });
 const csvWriter2 = createCsvWriter({
     path: '../moderately-narrow-cpr.csv',
     header: [
         {id: 'stock', title: 'Name'},
-        {id: 'width', title: 'Priority'}
+        // {id: 'width', title: 'Priority'}
     ]
 });
 let counter = 0;
@@ -60,13 +60,13 @@ async function getNarrowCprList() {
                 const width = await getCprWidth(parseFloat(element.high), parseFloat(element.low), parseFloat(element.close));
                 if(width <= 0.25) {
                     extremelyNarrow.push({
-                        stock: element.stock,
-                        width: width
+                        stock: `NSE:${element.stock},`, // storing it in this way, so that by copying the column in excel and pasting it in notepad and saving it we can directly import list in tradingview!
+                        width: parseFloat(width)
                     });
                 } else if(width <= 0.5) {
                     narrow.push({
-                        stock: element.stock,
-                        width: width,
+                        stock: `NSE:${element.stock},`, // storing it in this way, so that by copying the column in excel and pasting it in notepad and saving it we can directly import list in tradingview!
+                        width: parseFloat(width),
                     });
                 }
                 if(!(index % 10)) {
@@ -89,6 +89,12 @@ async function getNarrowCprList() {
 async function generateCsv() {
     try {
         const {extremelyNarrow, narrow} = await getNarrowCprList();
+        extremelyNarrow.sort((a,b) => {
+            return ( a.width > b.width ? 1 : -1 ); // sorting the excel on the basis of width!
+        });
+        narrow.sort((a,b) => {
+            return ( a.width > b.width ? 1 : -1 ); // sorting the excel on the basis of width!
+        });
         csvWriter1
             .writeRecords(extremelyNarrow)
             .then(() => {

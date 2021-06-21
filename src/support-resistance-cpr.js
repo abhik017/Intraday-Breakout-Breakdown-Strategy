@@ -48,7 +48,7 @@ tickerData = new Promise((resolve) => {
 
 async function runAlgorithm() {
     const data = await tickerData;
-    const tcList = [], bcList = [], pivotList = [];
+    const tcList = [], bcList = [], pivotList = [], tempArray = [];
     for(let index = 0; index < data.length; index++) {
         try {
             const stock = data[index].stock, centralPivot = data[index].centralPivot, bc = data[index].bc, tc = data[index].tc;
@@ -64,19 +64,23 @@ async function runAlgorithm() {
                 throw "Error";
             }
             if(centralPivot + 0.002 * centralPivot >= closePrice && centralPivot - 0.002 * centralPivot <= closePrice) {
+                tempArray.push(stock);
                 pivotList.push({
                     pivot: stock
                 });
             } else if(tc + 0.002 * tc >= closePrice && tc - 0.002 * tc <= closePrice) {
+                tempArray.push(stock);
                 tcList.push({
                     tc: stock
                 })
             } else if(bc + 0.002 * bc >= closePrice && bc - 0.002 * bc <= closePrice) {
+                tempArray.push(stock);
                 bcList.push({
                     bc: stock
                 });
             }
             if(!(index % 10)) {
+                console.log(tempArray);
                 console.log(`fetched ${index + 1} records.`);
             }
         } catch(err) {
