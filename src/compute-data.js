@@ -5,8 +5,11 @@ const fetchStockData = require('./fetch-price-data');
 const calcCpr = require('./calculate-cpr');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const csvWriter = createCsvWriter({
-  path: '../prev-day-data.csv',
+  path: "../ind_nifty500list.csv",
   header: [
+    {id: 'company', title: 'Company'},
+    {id: 'industry', title: 'Industry'},
+    {id: 'symbol', title: 'Symbol'},
     {id: 'range', title: 'Range'},
     {id: 'h4', title: 'Camarilla H4'},
     {id: 'l4', title: 'Camarilla L4'},
@@ -19,7 +22,7 @@ const csvWriter = createCsvWriter({
   ]
 });
 
-let counter = 0, tempArray = [];
+let counter = 0, tempArray = [], tempArray1 = [], tempArray2 = [];
 
 let tickerData = new Promise((resolve) => {
     fs.createReadStream(path.join(__dirname, "../ind_nifty500list.csv"))
@@ -31,20 +34,26 @@ let tickerData = new Promise((resolve) => {
     .on('data', (dataRow) => {
         if(counter != 0) {
             tempArray.push(dataRow[2]);
+            tempArray1.push(dataRow[0]);
+            tempArray2.push(dataRow[1]);
         }
         counter++;
     })
     .on('end', () => {
-        resolve(tempArray);
+        resolve({
+            symbolArray: tempArray,
+            industryArray: tempArray2,
+            companyArray: tempArray1
+        });
     });
 });
 
 async function rangeCalculator() {
-    tickerData = await tickerData;
+    const { symbolArray, industryArray, companyArray } = await tickerData;
     const rangeL4H4Array = [];
-    for(let i = 0; i < tickerData.length;i++) {
+    for(let i = 0; i < symbolArray.length;i++) {
         try {
-            const ohlcData = await fetchStockData(tickerData[i]);
+            const ohlcData = await fetchStockData(symbolArray[i]);
             const datasetSize = ohlcData.close.length;
             let closePrice = ohlcData.close[datasetSize - 1];
             let jj = datasetSize - 1;
@@ -68,6 +77,9 @@ async function rangeCalculator() {
             const l4 = closePrice - (range * (1.1/2)), h4 = closePrice + (range * (1.1/2));
             const cpr = calcCpr(maxPrice, minPrice, closePrice);
             rangeL4H4Array.push({
+                symbol: symbolArray[i],
+                industry: industryArray[i],
+                company: companyArray[i],
                 range: parseFloat(range),
                 l4: parseFloat(l4),
                 h4: parseFloat(h4),
@@ -81,6 +93,9 @@ async function rangeCalculator() {
             console.log(`fetched ${i+1} records. Close the CSV file, if Open!!`);
         } catch(err) {
             rangeL4H4Array.push({
+                symbol: symbolArray[i],
+                industry: industryArray[i],
+                company: companyArray[i],
                 range: 'error',
                 l4: 'error',
                 h4: 'error',

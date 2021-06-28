@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "This script analyses the stocks in top 500 nifty stocks whose current market price is trading above camarilla H4 or below camarilla L4 ",
   "main": "src/index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
